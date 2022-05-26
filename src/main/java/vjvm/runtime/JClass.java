@@ -47,13 +47,15 @@ public class JClass {
     constantPool = new ConstantPool(dataInput, this);
     accessFlags = dataInput.readUnsignedShort();
 
+    // to delete
+
     fields = null;
     methods = null;
     attributes = null;
-    throw new UnimplementedError(
-        "TODO: you need to construct thisClass, superClass, interfaces, fields, "
-        + "methods, and attributes from dataInput in lab 1.2; remove this for lab 1.1."
-        + "Some of them are not defined; you need to define them yourself");
+
+//    throw new UnimplementedError(
+//        "TODO: you need to construct thisClass, superClass, interfaces, fields, "
+//        + "methods, and attributes from dataInput in lab 1.2; remove this for lab 1.1");
   }
 
   public boolean public_() {

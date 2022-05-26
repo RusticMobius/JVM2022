@@ -16,7 +16,7 @@ public abstract class Constant {
     var tag = input.readByte();
     var count = 1;
 
-    // TODO: construct Float, Double, Class, Fieldref, Methodref, InterfaceMethodref, String, and Long
+    // TODO: construct Utf8, Float, Double Class, Fieldref, Methodref, InterfaceMethodref, String, and Long
     Constant result;
     switch (tag) {
       case CONSTANT_Integer:
@@ -51,7 +51,8 @@ public abstract class Constant {
         result = new UnknownConstant(input, 4);
         break;
       default:
-        throw new ClassFormatError();
+        result = new UnknownConstant(input, 0);
+//        throw new ClassFormatError();
     }
 
     return Pair.of(result, count);
