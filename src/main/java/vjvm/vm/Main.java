@@ -77,6 +77,8 @@ class Dump implements Callable<Integer> {
   }
 
   private void dump(JClass clazz) {
-    // throw new UnimplementedError("TODO: dump clazz in lab 1.2; remove this for 1.1");
+//    throw new UnimplementedError("TODO: dump clazz in lab 1.2; remove this for 1.1");
+//    System.out.println(clazz);
+    clazz.dumpJClass();
   }
 }

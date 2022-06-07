@@ -5,6 +5,7 @@ import vjvm.runtime.classdata.ConstantPool;
 import vjvm.runtime.classdata.FieldInfo;
 import vjvm.runtime.classdata.MethodInfo;
 import vjvm.runtime.classdata.attribute.Attribute;
+import vjvm.runtime.classdata.constant.ClassConstant;
 import vjvm.utils.UnimplementedError;
 import java.io.DataInput;
 import java.io.InvalidClassException;
@@ -26,9 +27,18 @@ public class JClass {
   private final ConstantPool constantPool;
   @Getter
   private final int accessFlags;
+  private final String thisClass;
+  private final String superClass;
+  private final String[] interfaces;
+
   private final FieldInfo[] fields;
   private final MethodInfo[] methods;
   private final Attribute[] attributes;
+
+  private final int interfacesCount;
+  private final int fieldsCount;
+  private final int methodsCount;
+  private final int attributesCount;
 
   @SneakyThrows
   public JClass(DataInput dataInput, JClassLoader classLoader) {
@@ -47,11 +57,44 @@ public class JClass {
     constantPool = new ConstantPool(dataInput, this);
     accessFlags = dataInput.readUnsignedShort();
 
-    // to delete
+    int thisClassIndex = dataInput.readUnsignedShort();
+    thisClass = ((ClassConstant)constantPool.constant(thisClassIndex)).name();
 
-    fields = null;
-    methods = null;
-    attributes = null;
+    int superClassIndex = dataInput.readUnsignedShort();
+    if (interface_()){
+      superClass = "java/lang/Object";
+    } else{
+      if (superClassIndex == 0){
+        superClass = "java/lang/Object";
+        }else{
+        superClass = ((ClassConstant)constantPool.constant(superClassIndex)).name();
+      }
+    }
+
+    interfacesCount = dataInput.readUnsignedShort();
+    interfaces = new String[interfacesCount];
+    for(int i = 0; i < interfacesCount; i++){
+      int interfaceIndex = dataInput.readUnsignedShort();
+      interfaces[i] = ((ClassConstant)constantPool.constant(interfaceIndex)).name();
+    }
+
+    fieldsCount = dataInput.readUnsignedShort();
+    fields = new FieldInfo[fieldsCount];
+    for(int i = 0; i < fieldsCount; i++){
+      fields[i] = new FieldInfo(dataInput, this);
+    }
+
+    methodsCount = dataInput.readUnsignedShort();
+    methods = new MethodInfo[methodsCount];
+    for(int i = 0; i < methodsCount; i++){
+      methods[i] = new MethodInfo(dataInput, this);
+    }
+
+    attributesCount = dataInput.readUnsignedShort();
+    attributes = new Attribute[attributesCount];
+    for (int i = 0; i < attributesCount; i++) {
+      attributes[i] = Attribute.constructFromData(dataInput, constantPool);
+    }
 
 //    throw new UnimplementedError(
 //        "TODO: you need to construct thisClass, superClass, interfaces, fields, "
@@ -110,4 +153,33 @@ public class JClass {
     return methods[index];
   }
 
+  public void dumpJClass(){
+    System.out.printf("class name: %s\n" , thisClass);
+    System.out.printf("minor version: %d\n" , minorVersion);
+    System.out.printf("major version: %d\n" , majorVersion);
+    System.out.printf("flags: 0x%x\n" , accessFlags);
+    System.out.printf("this class: %s\n", thisClass);
+    System.out.printf("super class: %s\n", superClass);
+    System.out.printf("constant pool:\n");
+    for(int i = 0; i < constantPool.size(); i++){
+      if(constantPool.constant(i) == null){
+        continue;
+      }
+      System.out.printf("#%d = " + constantPool.constant(i) + '\n',i);
+    }
+    System.out.printf("interfaces:\n");
+    for(int i = 0; i < interfaces.length; i++) {
+      System.out.println(interfaces[i]);
+    }
+    System.out.println("fields:");
+    for(int i = 0; i < fields.length; i++) {
+      System.out.printf("%s(0x%x): %s\n",fields[i].name(),fields[i].accessFlags(),fields[i].descriptor());
+    }
+    System.out.println("methods:");
+    for(int i = 0; i < methods.length; i++) {
+      System.out.printf("%s(0x%x): %s\n",methods[i].name(),methods[i].accessFlags(),methods[i].descriptor());
+    }
+
+
+  }
 }
