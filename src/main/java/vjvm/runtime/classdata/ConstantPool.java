@@ -48,6 +48,8 @@ public class ConstantPool {
     constants[index] = constant;
   }
 
+
+
   public int size() {
     return constants.length;
   }
